@@ -105,7 +105,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
         w('version_method = meta_version.get("method")')
         w('\n')
         w('if version_method is None:')
-        w(f'version = {init_version!r}', indent=1)
+        w(f'version = {str(init_version)!r}', indent=1)
         w('elif version_method == "timeversion":')
         w('version = datetime.today().timestamp()', indent=1)
         w('elif version_method == "autoinc":')
@@ -129,13 +129,13 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
         ww('long_description=readme,')
         
         if use_md:
-            with this.into('README.md').open('w') as f:
-                f.write(f'## {package_name}')
+            with this.into('README.md').open('w') as readme:
+                readme.write(f'## {package_name}')
             ww('long_description_content_type="text/markdown",')
         else:
-            with this.into('README.rst').open('w') as f:
-                f.write(f'{package_name}\n')
-                f.write('====' * len(package_name))
+            with this.into('README.rst').open('w') as readme:
+                readme.write(f'{package_name}\n')
+                readme.write('====' * len(package_name))
 
         ww(f'license={license!r},')
         ww(f'python_requires={pyversion!r},')
