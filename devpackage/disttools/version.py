@@ -181,4 +181,4 @@ class Version:
         return '.'.join(map(str, self._numbers))
 
     def __repr__(self):
-        return self.__str__()
+        return repr(self.__str__())
