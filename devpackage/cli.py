@@ -96,7 +96,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
             f.write(indent + buf + '\n')
 
         w('from setuptools import setup, find_packages')
-        w('from datatime import datatime')
+        w('from datetime import datetime')
         w('from devpackage.disttools.version import Version')
         w('from devpackage.disttools.path import Path')
         w('\n')
