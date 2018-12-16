@@ -109,7 +109,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
         w('elif version_method == "timeversion":')
         w('version = datetime.today().timestamp()', indent=1)
         w('elif version_method == "autoinc":')
-        w('version = Version(meta_version["current"].strip())')
+        w('version = Version(meta_version["current"].strip())', indent=1)
         w('\n')
         use_md = 'md' in kwargs
         readme_filename = 'README.' + ('rst' if use_md else 'md') 
