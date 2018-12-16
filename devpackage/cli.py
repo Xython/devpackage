@@ -20,7 +20,7 @@ def clean():
         each.delete()
 
 @talk
-def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwargs):
+def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
     """
     initialize developing python package.
     optional: 
@@ -42,7 +42,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
     package_name = package_name.strip()
     license = license.strip().lower()
     pyversion = pyversion.strip()
-    check_output(f'lice {license} -f LICENSE')
+    
 
     has_generated_file = ('generated') if 'generation' in kwargs else ()
     try:
@@ -63,14 +63,15 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
     else:
         repo = ""
     
-    path = path or package_name
-    this: Path = Path(path)
+    this: Path = Path(package_name)
     if package_name.lower() in (*has_generated_file, 'docs', 'test', 'build', 'setup.py', 'requirements.txt', '.meta_version', 'README.rst', 'README.md', 'LICENSE'):
         raise NameError(f"{package_name} is not a valid package name")
     
     if not this.exists():
         this.mkdir()
-
+    
+    license_filepath = this.into('LICENSE').abs()
+    check_output(f'lice {license} -f {license_filepath}')
     # python source code package    
     this.into(package_name).mkdir()
     
@@ -88,7 +89,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
             if 'timeversion' in kwargs:
                 meta_version.write('method: timeversion')
             else:
-                meta_version.write('method: autoinc')
+                meta_version.write('method: autoinc\n')
                 meta_version.write(f'current: {init_version}')
         
         def w(buf, indent=0):
@@ -102,17 +103,18 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
         w('\n')
         w('with open(".meta_version", "r") as meta_version:')
         w('meta_version_config = dict(each.strip().split(":") for each in meta_version.read().splitlines())', indent=1)
-        w('version_method = meta_version.get("method")')
+        w('version_method = meta_version_config.get("method")')
         w('\n')
         w('if version_method is None:')
         w(f'version = {str(init_version)!r}', indent=1)
-        w('elif version_method == "timeversion":')
+        w('elif version_method.strip() == "timeversion":')
         w('version = datetime.today().timestamp()', indent=1)
-        w('elif version_method == "autoinc":')
-        w('version = Version(meta_version["current"].strip())', indent=1)
+        w('elif version_method.strip() == "autoinc":')
+        w('version = Version(meta_version_config["current"].strip())', indent=1)
+        w('else: raise Exception("Invalid `version_method`. Check your .meta_version.")')
         w('\n')
         use_md = 'md' in kwargs
-        readme_filename = 'README.' + ('rst' if use_md else 'md') 
+        readme_filename = 'README.' + ('md' if use_md else 'rst') 
         w(f'with Path({readme_filename!r}).open() as readme:')
         w('readme = readme.read()', indent=1)
         w('\n')
@@ -160,8 +162,11 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
         ww('meta_version = Path(".meta_version").open("w")')
         ww('version.increment(2, 1)')
         ww('for i in range(2, 0, -1): version.carry_over(i, 42)')
-        ww('meta_version.write("method: autoinc")')
+        ww(r'meta_version.write("method: autoinc\n")')
         ww('meta_version.write(f"current: {version}")')
+        
+        with this.into(package_name).into('__init__.py').open('w') as init_file:
+            init_file.write(f'print ("hello community, I\'m {author}!")')
 
 def run():
     talk.on()
