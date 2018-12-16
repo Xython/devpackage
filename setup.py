@@ -21,7 +21,7 @@ setup(
     author='Xython',
     author_email='twshere@outlook.com',  # billing email
     packages=find_packages(),
-    entry_points={'console_scripts': ['devp=devpakcage.cli:talk']},
+    entry_points={'console_scripts': ['devp=devpackage.cli:run']},
     install_requires=['wisepy'],
     platforms='any',
     classifiers=[

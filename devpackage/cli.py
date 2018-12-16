@@ -6,6 +6,20 @@ from warnings import warn
 talk = Talking()
 
 @talk
+def clean():
+    """
+    clean some build caches
+    """
+    def check(p: str):
+        for each in ('build', '.egg-info', 'dist', '__pycache__'):
+            if p.lower().endswith(each):
+                return True
+        return False
+
+    for each in Path('.').list_dir(check):
+        each.delete()
+
+@talk
 def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwargs):
     """
     initialize developing python package.
@@ -25,19 +39,21 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
         use markdown as README.
     
     """
-    license = license.lower()
+    package_name = package_name.strip()
+    license = license.strip().lower()
+    pyversion = pyversion.strip()
     check_output(f'lice {license} -f LICENSE')
 
     has_generated_file = ('generated') if 'generation' in kwargs else ()
     try:
-        author = check_output('git config user.name').decode()
+        author = check_output('git config user.name').decode().strip()
     except CalledProcessError:
         author = None
         warn('git user.author not set, you should configure author manually.')
     
     # fuck it, I'm a repeater?
     try:
-        email = check_output('git config user.email').decode()
+        email = check_output('git config user.email').decode().strip()
     except CalledProcessError:
         email = None
         warn('git user.email not set, you should configure email manually.')
@@ -73,13 +89,12 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
                 meta_version.write('method: timeversion')
             else:
                 meta_version.write('method: autoinc')
-                meta_version.writable(f'current: {init_version}')
+                meta_version.write(f'current: {init_version}')
         
         def w(buf, indent=0):
             indent = '    ' * indent
             f.write(indent + buf + '\n')
 
-        w = f.write
         w('from setuptools import setup, find_packages')
         w('from datatime import datatime')
         w('from devpackage.disttools.version import Version')
@@ -90,7 +105,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
         w('version_method = meta_version.get("method")')
         w('\n')
         w('if version_method is None:')
-        w(f'version = {init_version}', indent=1)
+        w(f'version = {init_version!r}', indent=1)
         w('elif version_method == "timeversion":')
         w('version = datetime.today().timestamp()', indent=1)
         w('elif version_method == "autoinc":')
@@ -112,13 +127,21 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
         ww('keywords="", # keywords of your project that separated by comma ","')
         ww('description="", # a conceise introduction of your project')
         ww('long_description=readme,')
+        
         if use_md:
+            with this.into('README.md').open('w') as f:
+                f.write(f'## {package_name}')
             ww('long_description_content_type="text/markdown",')
+        else:
+            with this.into('README.rst').open('w') as f:
+                f.write(f'{package_name}\n')
+                f.write('====' * len(package_name))
+
         ww(f'license={license!r},')
         ww(f'python_requires={pyversion!r},')
-        ww(f'url={repo},')
-        ww(f'author={author},')
-        ww(f'author_email={email},')
+        ww(f'url={repo!r},')
+        ww(f'author={author!r},')
+        ww(f'author_email={email!r},')
         ww(f'packages=find_packages(),')
         ww('entry_points={"console_scripts": []},')
         ww('# above option specifies commands to be installed,')
@@ -132,10 +155,13 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", path=None, **kwa
         ww('],')
         ww('zip_safe=False,')
         w(')')
-        
+        w('\n')
         w('if isinstance(version, Version):')
         ww('meta_version = Path(".meta_version").open("w")')
         ww('version.increment(2, 1)')
         ww('for i in range(2, 0, -1): version.carry_over(i, 42)')
         ww('meta_version.write("method: autoinc")')
         ww('meta_version.write(f"current: {version}")')
+
+def run():
+    talk.on()
