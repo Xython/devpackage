@@ -6,7 +6,7 @@ with open('./README.md', encoding='utf-8') as f:
 
 setup(
     name='devpackage',
-    version='0.1',
+    version='0.2',
     keywords='developing tools, package development',
     description='',
     long_description=readme,
