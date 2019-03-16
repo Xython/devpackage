@@ -8,7 +8,6 @@ install:
   - pip install codecov coverage pytest==3.3.2 python_coveralls wisepy lice
 
 script:
-  - python setup install
   - coverage run test.py
   - coverage report
 
