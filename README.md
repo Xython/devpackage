@@ -33,8 +33,8 @@ setup(
     entry_points={"console_scripts": []},
     # above option specifies commands to be installed,
     # e.g: entry_points={"console_scripts": ["devp=devpackage.cli:run"]}
-    install_required=["devpackage"],
-    platform="any",
+    install_requires=["devpackage"],
+    platforms="any",
     ...
 )
 
