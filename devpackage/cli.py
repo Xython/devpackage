@@ -23,7 +23,7 @@ def clean():
 def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
     """
     initialize developing python package.
-    optional: 
+    optional:
     --generation
         this project contains generated files.
 
@@ -31,59 +31,59 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
         default version decider, even if you don't specify this option.
         automatically increment package's version.
         if `--timeversion` is set, this option will be ignored.
- 
+
     --timeversion
         automatically generate package's unique version through timestamp.
 
     --md
         use markdown as README.
-    
+
     """
     package_name = package_name.strip()
     license = license.strip().lower()
     pyversion = pyversion.strip()
-    
+
 
     has_generated_file = ('generated') if 'generation' in kwargs else ()
     try:
-        author = check_output('git config user.name').decode().strip()
+        author = check_output(['git', 'config',  'user.name']).decode().strip()
     except CalledProcessError:
         author = None
         warn('git user.author not set, you should configure author manually.')
-    
+
     # fuck it, I'm a repeater?
     try:
-        email = check_output('git config user.email').decode().strip()
+        email = check_output(['git', 'config', 'user.email']).decode().strip()
     except CalledProcessError:
         email = None
         warn('git user.email not set, you should configure email manually.')
-    
+
     if author:
         repo = f'https://github.com/{author}/{package_name}'
     else:
         repo = ""
-    
+
     this: Path = Path(package_name)
     if package_name.lower() in (*has_generated_file, 'docs', 'test', 'build', 'setup.py', 'requirements.txt', '.meta_version', 'README.rst', 'README.md', 'LICENSE'):
         raise NameError(f"{package_name} is not a valid package name")
-    
+
     if not this.exists():
         this.mkdir()
-    
+
     license_filepath = this.into('LICENSE').abs()
-    check_output(f'lice {license} -f {license_filepath}')
-    # python source code package    
+    check_output(['lice', license, '-f', license_filepath])
+    # python source code package
     this.into(package_name).mkdir()
-    
+
     this.into('docs').mkdir()
     this.into('test').mkdir()
     this.into('build').mkdir()
     init_version = Version("0.0.1")
-                
+
     if has_generated_file:
         this.into('generated').mkdir()
-    
-    
+
+
     with this.into('setup.py').open(mode='w') as f:
         with this.into('.meta_version').open(mode='w') as meta_version:
             if 'timeversion' in kwargs:
@@ -91,7 +91,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
             else:
                 meta_version.write('method: autoinc\n')
                 meta_version.write(f'current: {init_version}')
-        
+
         def w(buf, indent=0):
             indent = '    ' * indent
             f.write(indent + buf + '\n')
@@ -114,22 +114,22 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
         w('else: raise Exception("Invalid `version_method`. Check your .meta_version.")')
         w('\n')
         use_md = 'md' in kwargs
-        readme_filename = 'README.' + ('md' if use_md else 'rst') 
+        readme_filename = 'README.' + ('md' if use_md else 'rst')
         w(f'with Path({readme_filename!r}).open() as readme:')
         w('readme = readme.read()', indent=1)
         w('\n')
         w('setup(')
 
-        def ww(a): 
-            return w(a, indent=1) 
+        def ww(a):
+            return w(a, indent=1)
 
         ww(f'name={package_name!r},')
         ww(f'version=version if isinstance(version, str) else str(version),')
-        
+
         ww('keywords="", # keywords of your project that separated by comma ","')
         ww('description="", # a conceise introduction of your project')
         ww('long_description=readme,')
-        
+
         if use_md:
             with this.into('README.md').open('w') as readme:
                 readme.write(f'## {package_name}')
@@ -148,8 +148,8 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
         ww('entry_points={"console_scripts": []},')
         ww('# above option specifies commands to be installed,')
         ww('# e.g: entry_points={"console_scripts": ["yapypy=yapypy.cmd.compiler"]}')
-        ww('install_required=["devpackage"],')
-        ww('platform="any",')
+        ww('install_requires=["devpackage"],')
+        ww('platforms="any",')
         ww('classifiers=[')
         w('"Programming Language :: Python :: 3.6",', indent=2)
         w('"Programming Language :: Python :: 3.7",', indent=2)
@@ -164,7 +164,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
         ww('for i in range(2, 0, -1): version.carry_over(i, 42)')
         ww(r'meta_version.write("method: autoinc\n")')
         ww('meta_version.write(f"current: {version}")')
-        
+
         with this.into(package_name).into('__init__.py').open('w') as init_file:
             init_file.write(f'print ("hello community, I\'m {author}!")')
 
