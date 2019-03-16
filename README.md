@@ -1,3 +1,7 @@
+[![travis-ci](https://travis-ci.org/Xython/devpackage.svg?branch=master)](https://travis-ci.org/Xython/devpackage)
+[![codecov](https://codecov.io/gh/Xython/devpackage/branch/master/graph/badge.svg)](https://codecov.io/gh/Xython/devpackage)
+[![PyPI version](https://img.shields.io/pypi/v/devpackage.svg)](https://pypi.python.org/pypi/devpackage)
+
 ## DevPackage
 
 Command line tools to help you develop your package.
@@ -6,7 +10,7 @@ Command line tools to help you develop your package.
 # Preview
 
 ```
-> devp init mypack -license mit --md 
+> devp init mypack -license mit --md
 > cd mypack
 > ls -a
 ./  ../  .meta_version  LICENSE  README.md  build/  docs/  mypack/  setup.py  test/
@@ -56,7 +60,7 @@ current: 0.0.2
 
 # Install & Requirements
 
-Type `pip install -U devpackage` to install.  
+Type `pip install -U devpackage` to install.
 
 Requires:
 - wisepy
@@ -84,7 +88,7 @@ devp init <package name>
 Here are the descriptions of `devp` command:
 
 ```
-shell> devp --help 
+shell> devp --help
 Available commands:
   clean
       clean some build caches
