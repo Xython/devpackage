@@ -4,7 +4,7 @@ python:
   - "3.6-dev"
   - "3.7-dev"
 install:
-  - pip install codecov coverage pytest==3.3.2 python_coveralls wisepy lice
+  - pip install codecov coverage pytest==3.3.2 python_coveralls argser lice
 
 script:
   - coverage run test.py
