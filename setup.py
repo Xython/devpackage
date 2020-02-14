@@ -18,7 +18,7 @@ setup(
     author_email='twshere@outlook.com',  # billing email
     packages=find_packages(),
     entry_points={'console_scripts': ['devp=devpackage.cli:run']},
-    install_requires=['wisepy', 'lice', 'Redy'],
+    install_requires=['argser', 'lice'],
     platforms='any',
     classifiers=[
         'Programming Language :: Python :: 3.6',

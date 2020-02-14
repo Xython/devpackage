@@ -1,25 +1,22 @@
-from wisepy.talking import Talking
-from devpackage.disttools.path import Path
-from devpackage.disttools.version import Version
+from argser import SubCommands
+from devpackage.version import Version
+from devpackage.path import Path
 from subprocess import check_output, CalledProcessError
 from warnings import warn
-talk = Talking()
+subs = SubCommands()
 
-@talk
 def clean():
     """
     clean some build caches
     """
     def check(p: str):
-        for each in ('build', '.egg-info', 'dist', '__pycache__'):
-            if p.lower().endswith(each):
-                return True
-        return False
+        p = p.lower()
+        return p in ('build', 'dist', '__pycache__') or p.endswith('.egg-info')
 
     for each in Path('.').list_dir(check):
         each.delete()
 
-@talk
+
 def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
     """
     initialize developing python package.
@@ -64,7 +61,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
         repo = ""
 
     this: Path = Path(package_name)
-    if package_name.lower() in (*has_generated_file, 'docs', 'test', 'build', 'setup.py', 'requirements.txt', '.meta_version', 'README.rst', 'README.md', 'LICENSE'):
+    if package_name.lower() in (*has_generated_file, 'docs', 'runtests', 'build', 'setup.py', 'requirements.txt', '.meta_version', 'README.rst', 'README.md', 'LICENSE'):
         raise NameError(f"{package_name} is not a valid package name")
 
     if not this.exists():
@@ -73,11 +70,11 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
     license_filepath = this.into('LICENSE').abs()
     check_output(['lice', license, '-f', license_filepath])
     # python source code package
-    this.into(package_name).mkdir()
+    (this / package_name).mkdir()
 
-    this.into('docs').mkdir()
-    this.into('test').mkdir()
-    this.into('build').mkdir()
+    (this / 'docs').mkdir()
+    (this / 'runtests').mkdir()
+    (this / 'build').mkdir()
     init_version = Version("0.0.1")
 
     if has_generated_file:
@@ -98,8 +95,8 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
 
         w('from setuptools import setup, find_packages')
         w('from datetime import datetime')
-        w('from devpackage.disttools.version import Version')
-        w('from devpackage.disttools.path import Path')
+        w('from devpackage.version import Version')
+        w('from devpackage.path import Path')
         w('\n')
         w('with open(".meta_version", "r") as meta_version:')
         w('meta_version_config = dict(each.strip().split(":") for each in meta_version.read().splitlines())', indent=1)
@@ -127,7 +124,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
         ww(f'version=version if isinstance(version, str) else str(version),')
 
         ww('keywords="", # keywords of your project that separated by comma ","')
-        ww('description="", # a conceise introduction of your project')
+        ww('description="", # a concise introduction of your project')
         ww('long_description=readme,')
 
         if use_md:
@@ -146,8 +143,8 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
         ww(f'author_email={email!r},')
         ww(f'packages=find_packages(),')
         ww('entry_points={"console_scripts": []},')
-        ww('# above option specifies commands to be installed,')
-        ww('# e.g: entry_points={"console_scripts": ["yapypy=yapypy.cmd.compiler"]}')
+        ww('# above option specifies what commands to install,')
+        ww('# e.g: entry_points={"console_scripts": ["yapypy=yapypy.cmd:compiler"]}')
         ww('install_requires=["devpackage"],')
         ww('platforms="any",')
         ww('classifiers=[')
@@ -169,4 +166,6 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
             init_file.write(f'print ("hello community, I\'m {author}!")')
 
 def run():
-    talk.on()
+    subs.add(init)
+    subs.add(clean)
+    subs.parse()

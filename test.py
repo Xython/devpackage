@@ -1,5 +1,5 @@
 from devpackage.cli import init, clean
-from devpackage.disttools.path import Path
+from devpackage.path import Path
 from os import chdir, mkdir
 from subprocess import check_output
 from shutil import rmtree
@@ -22,4 +22,6 @@ clean()
 
 check_output(['pip', 'uninstall', '-y', 'mock_pack2_qwertyuiopasdfghjkl'])
 chdir('../../')
-rmtree('./test_sample')
+w = Path('./test_sample')
+print(type(w))
+w.delete()
