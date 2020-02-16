@@ -5,6 +5,7 @@ from subprocess import check_output, CalledProcessError
 from warnings import warn
 subs = SubCommands()
 
+
 def clean():
     """
     clean some build caches
@@ -17,7 +18,12 @@ def clean():
         each.delete()
 
 
-def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
+def init(package_name: str, license='MIT', pyversion=">=3.6.0",
+         generation: bool = False,
+         autoversion: bool = False,
+         md: bool=False,
+         timeversion: bool=False,
+         simple: bool=False):
     """
     initialize developing python package.
     optional:
@@ -40,8 +46,7 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
     license = license.strip().lower()
     pyversion = pyversion.strip()
 
-
-    has_generated_file = ('generated') if 'generation' in kwargs else ()
+    has_generated_file = ('generated', ) if generation else ()
     try:
         author = check_output(['git', 'config',  'user.name']).decode().strip()
     except CalledProcessError:
@@ -80,14 +85,14 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
     if has_generated_file:
         this.into('generated').mkdir()
 
-
     with this.into('setup.py').open(mode='w') as f:
-        with this.into('.meta_version').open(mode='w') as meta_version:
-            if 'timeversion' in kwargs:
-                meta_version.write('method: timeversion')
-            else:
-                meta_version.write('method: autoinc\n')
-                meta_version.write(f'current: {init_version}')
+        if not simple:
+            with this.into('.meta_version').open(mode='w') as meta_version:
+                if timeversion:
+                    meta_version.write('method: timeversion')
+                else:
+                    meta_version.write('method: autoinc\n')
+                    meta_version.write(f'current: {init_version}')
 
         def w(buf, indent=0):
             indent = '    ' * indent
@@ -95,22 +100,28 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
 
         w('from setuptools import setup, find_packages')
         w('from datetime import datetime')
-        w('from devpackage.version import Version')
-        w('from devpackage.path import Path')
+        if not simple:
+            w('from devpackage.version import Version')
+            w('from devpackage.path import Path')
+        else:
+            w('from pathlib import Path')
         w('\n')
-        w('with open(".meta_version", "r") as meta_version:')
-        w('meta_version_config = dict(each.strip().split(":") for each in meta_version.read().splitlines())', indent=1)
-        w('version_method = meta_version_config.get("method")')
-        w('\n')
-        w('if version_method is None:')
-        w(f'version = {str(init_version)!r}', indent=1)
-        w('elif version_method.strip() == "timeversion":')
-        w('version = datetime.today().timestamp()', indent=1)
-        w('elif version_method.strip() == "autoinc":')
-        w('version = Version(meta_version_config["current"].strip())', indent=1)
-        w('else: raise Exception("Invalid `version_method`. Check your .meta_version.")')
-        w('\n')
-        use_md = 'md' in kwargs
+        if not simple:
+            w('with open(".meta_version", "r") as meta_version:')
+            w('meta_version_config = dict(each.strip().split(":") for each in meta_version.read().splitlines())', indent=1)
+            w('version_method = meta_version_config.get("method")')
+            w('\n')
+            w('if version_method is None:')
+            w(f'version = {str(init_version)!r}', indent=1)
+            w('elif version_method.strip() == "timeversion":')
+            w('version = datetime.today().timestamp()', indent=1)
+            w('elif version_method.strip() == "autoinc":')
+            w('version = Version(meta_version_config["current"].strip())', indent=1)
+            w('else: raise Exception("Invalid `version_method`. Check your .meta_version.")')
+            w('\n')
+        else:
+            w("version = 0.1")
+        use_md = md
         readme_filename = 'README.' + ('md' if use_md else 'rst')
         w(f'with Path({readme_filename!r}).open() as readme:')
         w('readme = readme.read()', indent=1)
@@ -145,7 +156,11 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
         ww('entry_points={"console_scripts": []},')
         ww('# above option specifies what commands to install,')
         ww('# e.g: entry_points={"console_scripts": ["yapypy=yapypy.cmd:compiler"]}')
-        ww('install_requires=["devpackage"],')
+        if simple:
+            ww('install_requires=[], # dependencies')
+        else:
+            ww('install_requires=["devpackage"], # dependencies')
+
         ww('platforms="any",')
         ww('classifiers=[')
         w('"Programming Language :: Python :: 3.6",', indent=2)
@@ -155,15 +170,18 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0", **kwargs):
         ww('zip_safe=False,')
         w(')')
         w('\n')
-        w('if isinstance(version, Version):')
-        ww('meta_version = Path(".meta_version").open("w")')
-        ww('version.increment(2, 1)')
-        ww('for i in range(2, 0, -1): version.carry_over(i, 42)')
-        ww(r'meta_version.write("method: autoinc\n")')
-        ww('meta_version.write(f"current: {version}")')
+
+        if not simple:
+            w('if isinstance(version, Version):')
+            ww('meta_version = Path(".meta_version").open("w")')
+            ww('version.increment(2, 1)')
+            ww('for i in range(2, 0, -1): version.carry_over(i, 42)')
+            ww(r'meta_version.write("method: autoinc\n")')
+            ww('meta_version.write(f"current: {version}")')
 
         with this.into(package_name).into('__init__.py').open('w') as init_file:
-            init_file.write(f'print ("hello community, I\'m {author}!")')
+            init_file.write(f'print("hello community, I\'m {author}!")')
+
 
 def run():
     subs.add(init)
