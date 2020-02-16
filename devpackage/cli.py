@@ -1,5 +1,4 @@
 from argser import SubCommands
-from argparse import RawTextHelpFormatter
 from devpackage.version import Version
 from devpackage.path import Path
 from subprocess import check_output, CalledProcessError
@@ -187,6 +186,6 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0",
 
 
 def run():
-    subs.add(description=init.__doc__, formatter_class=RawTextHelpFormatter)(init)
-    subs.add(description=clean.__doc__, formatter_class=RawTextHelpFormatter)(clean)
+    subs.add(description=init.__doc__)(init)
+    subs.add(description=clean.__doc__)(clean)
     subs.parse()
