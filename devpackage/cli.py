@@ -1,4 +1,5 @@
 from argser import SubCommands
+from argparse import RawTextHelpFormatter
 from devpackage.version import Version
 from devpackage.path import Path
 from subprocess import check_output, CalledProcessError
@@ -25,8 +26,11 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0",
          timeversion: bool=False,
          simple: bool=False):
     """
-    initialize developing python package.
-    optional:
+    initialize a python package.
+    --simple
+        do not set up auto-version stuffs and
+        do not add devpackage as a dependency.
+    
     --generation
         this project contains generated files.
 
@@ -40,7 +44,6 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0",
 
     --md
         use markdown as README.
-
     """
     package_name = package_name.strip()
     license = license.strip().lower()
@@ -184,6 +187,6 @@ def init(package_name: str, license='MIT', pyversion=">=3.6.0",
 
 
 def run():
-    subs.add(init)
-    subs.add(clean)
+    subs.add(description=init.__doc__, formatter_class=RawTextHelpFormatter)(init)
+    subs.add(description=clean.__doc__, formatter_class=RawTextHelpFormatter)(clean)
     subs.parse()
